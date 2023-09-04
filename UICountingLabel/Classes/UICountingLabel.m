@@ -174,7 +174,7 @@
     self.easingRate = 3.0f;
     self.progress = 0;
     self.totalTime = duration;
-    self.lastUpdate = CACurrentMediaTime();
+    self.lastUpdate = [NSDate timeIntervalSinceReferenceDate];
 
     switch(self.method)
     {
@@ -199,10 +199,12 @@
     }
 
     CADisplayLink *timer = [CADisplayLink displayLinkWithTarget:self selector:@selector(updateValue:)];
-    timer.frameInterval = 2;
+    timer.preferredFramesPerSecond = 60;
     [timer addToRunLoop:[NSRunLoop mainRunLoop] forMode:NSDefaultRunLoopMode];
     [timer addToRunLoop:[NSRunLoop mainRunLoop] forMode:UITrackingRunLoopMode];
     self.timer = timer;
+    
+    self.isAnimating = YES;
 }
 
 - (void)countFromCurrentValueTo:(CGFloat)endValue {
@@ -224,7 +226,7 @@
 - (void)updateValue:(NSTimer *)timer {
     
     // update progress
-    NSTimeInterval now = CACurrentMediaTime();
+    NSTimeInterval now = [NSDate timeIntervalSinceReferenceDate];
     self.progress += now - self.lastUpdate;
     self.lastUpdate = now;
     
@@ -238,6 +240,7 @@
     
     if (self.progress == self.totalTime) {
         [self runCompletionBlock];
+        self.isAnimating = NO;
     }
 }
 
@@ -273,10 +276,9 @@
 
 - (void)runCompletionBlock {
     
-    void (^block)(void) = self.completionBlock;
-    if (block) {
+    if (self.completionBlock) {
+        self.completionBlock();
         self.completionBlock = nil;
-        block();
     }
 }
 
@@ -291,4 +293,10 @@
     return self.startingValue + (updateVal * (self.destinationValue - self.startingValue));
 }
 
+// reset timer for some cases (ex: cell reuse)
+- (void)stopCounting {
+    [self.timer invalidate];
+    self.timer = nil;
+    self.isAnimating = NO;
+}
 @end

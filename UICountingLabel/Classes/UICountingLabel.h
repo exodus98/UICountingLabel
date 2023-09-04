@@ -15,6 +15,7 @@ typedef NSAttributedString* (^UICountingLabelAttributedFormatBlock)(CGFloat valu
 
 @interface UICountingLabel : UILabel
 
+@property BOOL isAnimating;
 @property (nonatomic, strong) NSString *format;
 @property (nonatomic, assign) UILabelCountingMethod method;
 @property (nonatomic, assign) NSTimeInterval animationDuration;
@@ -33,6 +34,8 @@ typedef NSAttributedString* (^UICountingLabelAttributedFormatBlock)(CGFloat valu
 -(void)countFromZeroTo:(CGFloat)endValue withDuration:(NSTimeInterval)duration;
 
 - (CGFloat)currentValue;
+
+- (void)stopCounting;
 
 @end
 
